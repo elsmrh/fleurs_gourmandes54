@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# SQLite local dev databases
+*.db
+*.db-journal
+
+# Dev scripts
+fetch.js
+fetch2.js
