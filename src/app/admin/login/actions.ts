@@ -1,0 +1,21 @@
+"use server"
+
+import { signIn } from "@/auth"
+import { AuthError } from "next-auth"
+
+export async function login(prevState: string | undefined, formData: FormData) {
+  try {
+    await signIn("credentials", formData)
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return "Identifiants invalides."
+        default:
+          return "Une erreur est survenue."
+      }
+    }
+    throw error // Important to throw the redirect error
+  }
+}
+
