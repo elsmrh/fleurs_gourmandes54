@@ -1,9 +1,25 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Star, Heart, Sparkles, Gift, Calendar, Eye, Cake, Briefcase, Smile, Users, PartyPopper } from "lucide-react"
 import TestimonialSlider from "@/components/TestimonialSlider"
+import { prisma } from "@/lib/prisma"
 
-export default function Home() {
+// Rendu à la demande : la base n'est pas accessible pendant le build Docker
+export const dynamic = "force-dynamic"
+
+export default async function Home() {
+  const flavors = await prisma.flavor.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" },
+  })
+
+  const topServices = await prisma.service.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" },
+    take: 3
+  })
+
   return (
     <div className="flex flex-col min-h-screen">
 
@@ -13,7 +29,7 @@ export default function Home() {
       <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background — Photo hero bouquet cupcakes */}
         <div className="absolute inset-0">
-          <img src="/images/hero-bouquet.jpg" alt="" className="w-full h-full object-cover object-center" />
+          <Image src="/images/hero-bouquet.jpg" alt="Bouquet de cupcakes floraux artisanaux" fill sizes="100vw" className="object-cover object-center" priority />
           <div className="absolute inset-0 bg-black/50 md:bg-black/40" />
         </div>
         
@@ -42,7 +58,7 @@ export default function Home() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="bg-transparent rounded-full px-8 md:px-10 py-6 md:py-7 text-base md:text-lg border border-white text-white hover:bg-white/10 backdrop-blur-sm">
-              <Link href="/galerie" className="flex items-center justify-center">
+              <Link href="/prestations" className="flex items-center justify-center">
                 <Eye className="mr-2 h-5 w-5" /> Voir nos créations
               </Link>
             </Button>
@@ -219,32 +235,10 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16">
-            {[
-              {
-                name: "Bouquet Délicat",
-                desc: "7 cupcakes • 2 parfums au choix",
-                price: "35",
-                image: "/images/bouquet-classique.jpg",
-                badge: ""
-              },
-              {
-                name: "Bouquet Charmant",
-                desc: "12 cupcakes • 2 parfums au choix",
-                price: "60",
-                image: "/images/bouquet-champetre.jpg",
-                badge: "Best-seller"
-              },
-              {
-                name: "Bouquet Pétale",
-                desc: "19 cupcakes • 3 parfums au choix",
-                price: "90",
-                image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=800&auto=format&fit=crop",
-                badge: "Idéal Cadeau"
-              }
-            ].map((product, i) => (
-              <Link href="/prestations" key={i} className="group flex flex-col items-center text-center">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl mb-8 shadow-sm group-hover:shadow-xl transition-all duration-500 border border-stone-100">
-                  <img src={product.image} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
+            {topServices.map((product, i) => (
+              <Link href={`/commander?serviceId=${product.id}`} key={product.id} className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-pink-200 border border-stone-100 transition-all duration-500 flex flex-col items-center text-center">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl mb-8 border border-stone-50">
+                  <Image src={product.imageUrl || '/images/placeholder.jpg'} alt={`Bouquet ${product.name} - Fleurs Gourmandes 54`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   {product.badge && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold text-pink-600 shadow-sm border border-pink-50">
                       {product.badge}
@@ -255,10 +249,9 @@ export default function Home() {
                 
                 <h3 className="font-serif text-2xl text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">{product.name}</h3>
                 
-                {/* Petit séparateur */}
                 <div className="w-8 h-px bg-pink-200 mb-4 transition-all duration-500 group-hover:w-16 group-hover:bg-pink-400" />
                 
-                <p className="text-gray-500 font-light text-sm mb-4">{product.desc}</p>
+                <p className="text-gray-500 font-light text-sm mb-4">{product.description}</p>
                 <p className="text-xl font-serif text-pink-600 mb-6">{product.price} €</p>
                 
                 <div className="mt-auto w-full px-4 md:px-8">
@@ -297,30 +290,27 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto mt-12">
-            {[
-              "Nutella",
-              "Fruits Rouges",
-              "Mangue Passion",
-              "Caramel Beurre Salé",
-              "Bueno",
-              "Chocolat Dubaï",
-            ].map((flavor, i) => (
-              <div key={i} className="group relative bg-white p-8 md:p-10 text-center shadow-sm hover:shadow-xl transition-all duration-700 flex flex-col items-center justify-center min-h-[160px]">
+            {flavors.length > 0 ? flavors.map((flavor, i) => (
+              <div key={flavor.id} className="group relative bg-white p-8 md:p-10 text-center shadow-sm hover:shadow-xl transition-all duration-700 flex flex-col items-center justify-center min-h-[160px]">
                 {/* Cadre intérieur façon étiquette parfum/luxe */}
                 <div className="absolute inset-2 md:inset-3 border border-stone-100 group-hover:border-pink-200 transition-colors duration-700 pointer-events-none" />
                 
                 <div className="relative z-10 flex flex-col items-center justify-center w-full">
-                  <span className="font-serif italic text-stone-300 text-sm mb-3 group-hover:text-pink-400 transition-colors duration-500">
+                  <span className="font-serif italic text-stone-500 text-sm mb-3 group-hover:text-pink-600 transition-colors duration-500">
                     N° {String(i + 1).padStart(2, '0')}
                   </span>
                   <h3 className="font-serif text-lg md:text-xl text-gray-900 leading-snug group-hover:text-pink-600 transition-colors duration-500">
-                    {flavor}
+                    {flavor.name}
                   </h3>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-full text-center py-10">
+                <p className="text-gray-500 italic">Bientôt de nouveaux parfums...</p>
+              </div>
+            )}
           </div>
-          <p className="text-center text-sm text-gray-400 mt-6">* Chocolat Dubaï : supplément 1€/pièce en dessous de 30 cupcakes</p>
+          <p className="text-center text-sm text-gray-600 mt-6">* Chocolat Dubaï : supplément 1€/pièce en dessous de 30 cupcakes</p>
         </div>
       </section>
 
@@ -366,7 +356,7 @@ export default function Home() {
           
           <div className="text-center mt-14">
             <Button asChild size="lg" className="bg-pink-500 hover:bg-pink-600 text-white rounded-full px-8 md:px-10 py-6 text-base md:text-lg border-none shadow-xl shadow-pink-500/20">
-              <Link href="/reservation" className="flex items-center justify-center">
+              <Link href="/prestations" className="flex items-center justify-center">
                 <Calendar className="mr-2 h-5 w-5" /> Réserver ma date
               </Link>
             </Button>

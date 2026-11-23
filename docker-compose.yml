@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: fleurs-gourmandes54
+    restart: unless-stopped
+    # Réseau "host" : le conteneur joint PostgreSQL sur localhost:5432 comme sur le VPS,
+    # sans toucher à pg_hba.conf. L'app n'écoute que sur 127.0.0.1 (exposée via Nginx).
+    network_mode: host
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - HOSTNAME=127.0.0.1
+      - UPLOAD_DIR=/app/uploads
+      - AUTH_TRUST_HOST=true
+    volumes:
+      # Images uploadées depuis l'admin : persistées hors du conteneur
+      - ./data/uploads:/app/uploads

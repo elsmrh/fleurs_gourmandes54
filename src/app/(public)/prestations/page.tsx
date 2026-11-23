@@ -1,52 +1,24 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight, Sparkles } from "lucide-react"
+import { prisma } from "@/lib/prisma"
+import Image from "next/image"
 
-export default function PrestationsPage() {
-  const products = [
-    {
-      name: "Bouquet Délicat",
-      desc: "7 cupcakes • 2 parfums au choix",
-      price: "35",
-      image: "/images/bouquet-classique.jpg",
-      badge: ""
-    },
-    {
-      name: "Bouquet Charmant",
-      desc: "12 cupcakes • 2 parfums au choix",
-      price: "60",
-      image: "/images/bouquet-champetre.jpg",
-      badge: "Best-seller"
-    },
-    {
-      name: "Bouquet Pétale",
-      desc: "19 cupcakes • 3 parfums au choix",
-      price: "90",
-      image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=800&auto=format&fit=crop",
-      badge: "Idéal Cadeau"
-    },
-    {
-      name: "Bouquet Harmonie",
-      desc: "24 cupcakes • 4 parfums au choix",
-      price: "120",
-      image: "https://images.unsplash.com/photo-1481391319762-47dff72954d9?q=80&w=800&auto=format&fit=crop",
-      badge: ""
-    },
-    {
-      name: "Bouquet Élégance",
-      desc: "30 cupcakes • 4 parfums au choix",
-      price: "150",
-      image: "https://images.unsplash.com/photo-1587668178277-295251f900ce?q=80&w=800&auto=format&fit=crop",
-      badge: "Événements"
-    },
-    {
-      name: "Bouquet Signature",
-      desc: "50 cupcakes • 5 parfums au choix",
-      price: "250",
-      image: "https://images.unsplash.com/photo-1558326567-98ae2405596b?q=80&w=800&auto=format&fit=crop",
-      badge: "Prestige"
-    }
-  ];
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'La Carte | Fleurs Gourmandes 54',
+  description: 'Découvrez nos bouquets de cupcakes et gâteaux fleuris.'
+}
+
+// Rendu à la demande : la base n'est pas accessible pendant le build Docker
+export const dynamic = "force-dynamic"
+
+export default async function PrestationsPage() {
+  const products = await prisma.service.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" }
+  })
 
   return (
     <div className="bg-stone-50 min-h-screen pb-24 pt-32">
@@ -63,9 +35,15 @@ export default function PrestationsPage() {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-16">
           {products.map((product, i) => (
-            <Link href={`/commander?prestation=${encodeURIComponent(product.name)}&prix=${product.price}`} key={i} className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-pink-200 border border-stone-100 transition-all duration-500 flex flex-col items-center text-center">
+            <Link href={`/commander?serviceId=${product.id}`} key={i} className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-pink-200 border border-stone-100 transition-all duration-500 flex flex-col items-center text-center">
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl mb-8 border border-stone-50">
-                <img src={product.image} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" />
+                <Image 
+                  src={product.imageUrl || '/images/placeholder.jpg'}
+                  alt={`Bouquet ${product.name} - Fleurs Gourmandes 54`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
                 {product.badge && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold text-pink-600 shadow-sm border border-pink-50">
                     {product.badge}
@@ -78,7 +56,7 @@ export default function PrestationsPage() {
               
               <div className="w-8 h-px bg-pink-200 mb-4 transition-all duration-500 group-hover:w-16 group-hover:bg-pink-400" />
               
-              <p className="text-gray-500 font-light text-sm mb-4">{product.desc}</p>
+              <p className="text-gray-500 font-light text-sm mb-4">{product.description}</p>
               <p className="text-xl font-serif text-pink-600 mb-6">{product.price} €</p>
               
               <div className="mt-auto w-full px-4 md:px-8">
@@ -91,11 +69,18 @@ export default function PrestationsPage() {
         </div>
         
         <div className="mt-20 text-center">
-          <div className="inline-flex flex-col md:flex-row items-center justify-center bg-white border border-stone-200 shadow-sm rounded-3xl md:rounded-full px-8 py-6 md:py-4">
-            <span className="font-serif italic text-gray-600 mb-2 md:mb-0">Besoin d'une création sur-mesure ou XXL ?</span>
-            <span className="hidden md:inline mx-4 text-pink-300">|</span>
-            <span className="text-sm font-bold text-pink-600 uppercase tracking-widest">Plus de 50 cupcakes sur devis</span>
-          </div>
+          <Link
+            href="/contact"
+            className="inline-flex flex-col md:flex-row items-center justify-center bg-white border border-stone-200 hover:border-pink-300 hover:shadow-md transition-all duration-300 shadow-sm rounded-3xl md:rounded-full px-8 py-6 md:py-4 group"
+          >
+            <span className="font-serif italic text-gray-700 mb-2 md:mb-0">
+              Besoin d&apos;une création sur-mesure ou XXL ?
+            </span>
+            <span className="hidden md:inline mx-4 text-pink-400">|</span>
+            <span className="text-sm font-bold text-pink-600 group-hover:text-pink-700 uppercase tracking-widest inline-flex items-center gap-2">
+              Plus de 50 cupcakes sur devis <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ export function LoginForm() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="admin@fleursgourmandes54.fr" required />
+            <Input id="email" name="email" type="email" placeholder="admin@fleurs-gourmandes54.fr" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Mot de passe</Label>

@@ -49,3 +49,14 @@ next-env.d.ts
 # Dev scripts
 fetch.js
 fetch2.js
+
+# Uploads locaux
+public/uploads/
+
+# Env example (versionné)
+!.env.example
+
+# Livrables / archives / données Docker
+*.zip
+audit_qa_livrables/
+/data/
