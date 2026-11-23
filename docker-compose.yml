@@ -10,7 +10,8 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - PORT=3003
+      # Port défini par APP_PORT dans .env (3003 par défaut) — doit être libre sur le VPS
+      - PORT=${APP_PORT:-3003}
       - HOSTNAME=127.0.0.1
       - UPLOAD_DIR=/app/uploads
       - AUTH_TRUST_HOST=true
